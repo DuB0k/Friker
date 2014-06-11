@@ -150,3 +150,6 @@ def create_photo(request):
 class PhotoListView(ListView):
     model = Photo
     template_name = 'photos/photo_list.html'
+
+    def get_queryset(self):
+        return Photo.objects.filter(visibility=VISIBILITY_PUBLIC)
