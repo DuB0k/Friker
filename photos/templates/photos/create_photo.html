@@ -1,0 +1,17 @@
+{% extends 'photos/base.html' %}
+
+{% block head_title %} Nueva foto {% endblock %}
+{% block body_content %}
+        <h1> Nueva Foto</h1>
+        {% if photo %}
+            <span style="color:green">
+                Guardado con exito!
+                <a href="/photos/{{ photo.pk }}">Ver foto</a>
+            </span>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Crear Foto</button>
+        </form>
+{% endblock %}

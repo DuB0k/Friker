@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title>Friker login</title>
-</head>
-<body>
-    {% include 'photos/includes/menu.html' %}
+{% extends 'photos/base.html' %}
+{% block head_title %}
+    Lista de fotos
+{% endblock %}
+{% block body_content %}
     <h1> Entra en Friker </h1>
     {% for error in errors %}
         <p>{{ error }}</p>
@@ -15,5 +12,4 @@
         {{ form.as_p }}
         <p><button type="submit">Entrar</button></p>
     </form>
-</body>
-</html>
+{% endblock %}
