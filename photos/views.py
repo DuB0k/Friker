@@ -19,7 +19,7 @@ def home(request):
 
     context = {
         #Cogemos solo las 3 primeras fotos
-        'photos' : photo_list[:3]
+        'photos': photo_list[:3]
     }
 
     return render(request, 'photos/index.html', context)
@@ -95,6 +95,7 @@ def user_logout(request):
     logout(request)
     return redirect('/')
 
+
 # Forzamos a que el usuario este autenticado
 @login_required()
 def user_profile(request):
@@ -106,16 +107,17 @@ def user_profile(request):
     context = {
         'photos': request.user.photo_set.all()
     }
-
-    return render(request, 'photos/profile.html',context)
+    return render(request, 'photos/profile.html', context)
 
 
 @login_required()
 def create_photo(request):
     new_photo = None
 
-    if request.method =='POST':
-            form = PhotoForm(request.POST)
+    if request.method == 'POST':
+            #Creamos la foto para el usuario autenticado
+            photo_with_user = Photo(owner=request.user)
+            form = PhotoForm(request.POST, instance=photo_with_user)
             if form.is_valid():
                 new_photo = form.save()
                 form = PhotoForm()
