@@ -59,6 +59,7 @@ class UserSerializer(serializers.Serializer):
 class PhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
+        read_only_fields = ('owner',)
 
 """
     def validate_description(self, attrs, source):
@@ -70,6 +71,7 @@ class PhotoSerializer(serializers.ModelSerializer):
 
         return attrs # todo ha ido bien
 """
+
 
 class PhotoListSerializer(PhotoSerializer):
     class Meta(PhotoSerializer.Meta):

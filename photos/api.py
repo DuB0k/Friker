@@ -9,6 +9,8 @@ from rest_framework import status
 from models import Photo
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from permissions import UserPermissions
+from django.db.models import Q
+from models import VISIBILITY_PUBLIC
 
 
 class UserListAPI(APIView):
@@ -66,7 +68,20 @@ class UserDetailAPI(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class PhotoListAPI(ListCreateAPIView):
+class PhotoAPIQueryset:
+    def get_queryset(self):
+        """
+        Devuelve un queryset en funcion de varios criterios
+        """
+        if self.request.user.is_superuser:
+            return Photo.objects.all()
+        elif self.request.user.is_authenticated():
+            return Photo.objects.filter(Q(visibility=VISIBILITY_PUBLIC) | Q(owner=self.request.user))
+        else:
+            return Photo.objects.filter(visibility=VISIBILITY_PUBLIC)
+
+
+class PhotoListAPI(PhotoAPIQueryset, ListCreateAPIView):
     """
     Implementa el listado (GET) y creacion (POST) de fotos
     """
@@ -78,8 +93,14 @@ class PhotoListAPI(ListCreateAPIView):
         # si es un post podemos enviar el modelo con todos los campos
         return PhotoSerializer if self.request.method == "POST" else self.serializer_class
 
+    def pre_save(self, obj):
+        """
+        Asigna la autoria de la foto al usuario autenticado al crearla
+        """
+        obj.owner = self.request.user
 
-class PhotoDetailAPI(RetrieveUpdateDestroyAPIView):
+
+class PhotoDetailAPI(PhotoAPIQueryset, RetrieveUpdateDestroyAPIView):
     """
     Implementa el API de listado (GET), update (PUT) y borrado (DELETE) de fotos
     """
