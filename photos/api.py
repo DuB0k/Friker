@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth.models import User
-from serializers import UserSerializer, PhotoSerializer
+from serializers import UserSerializer, PhotoSerializer, PhotoListSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
@@ -61,7 +61,14 @@ class PhotoListAPI(ListCreateAPIView):
     Implementa el listado (GET) y creacion (POST) de fotos
     """
     queryset = Photo.objects.all()
-    serializer_class = PhotoSerializer
+    serializer_class = PhotoListSerializer
+
+    def get_serializer_class(self):
+        # si es un post podemos enviar el modelo con todos los campos
+        return PhotoSerializer if self.request.method == "POST" else self.serializer_class
+
+
+
 
 class PhotoDetailAPI(RetrieveUpdateDestroyAPIView):
     """
@@ -69,3 +76,6 @@ class PhotoDetailAPI(RetrieveUpdateDestroyAPIView):
     """
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
+
+
+

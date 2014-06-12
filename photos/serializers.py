@@ -4,6 +4,12 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from models import Photo
+from django.conf import settings
+
+# Permite que BADWORDS se pueda sobreescribir desde el settings.py
+# Si no exite el atributo BADWORDS, devuelve la tupla vacia ()
+BADWORDS = getattr(settings, 'BADWORDS', ())
+
 
 class UserSerializer(serializers.Serializer):
     #Estos campos son los que van a aparecer en el api REST
@@ -41,9 +47,28 @@ class UserSerializer(serializers.Serializer):
 
         return instance
 
+    def validate(self, attrs):
+        existent_users = User.objects.filter(username=attrs.get('username'))
+        if len(existent_users) > 0:
+            raise serializers.ValidationError(u"Ya existe ese usuario")
+        else:
+            return attrs # todo ha ido ok
+
 
 #Este serializer se hace siguiendo un modelo
 class PhotoSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Photo
+
+    def validate_description(self, attrs, source):
+        description = attrs.get(source)
+        for badword in BADWORDS:
+            if badword.lower() in description.lower():
+                raise serializers.ValidationError(badword + u" no esta permitido")
+
+        return attrs # todo ha ido bien
+
+
+class PhotoListSerializer(PhotoSerializer):
+    class Meta(PhotoSerializer.Meta):
+        fields = ('id', 'owner', 'name')
