@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from serializers import UserSerializer, PhotoSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from models import Photo
@@ -55,20 +56,16 @@ class UserDetailAPI(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class PhotoListAPI(APIView):
+class PhotoListAPI(ListCreateAPIView):
+    """
+    Implementa el listado (GET) y creacion (POST) de fotos
+    """
+    queryset = Photo.objects.all()
+    serializer_class = PhotoSerializer
 
-    def get(self, request):
-        photos = Photo.objects.all()
-        serializer = PhotoSerializer(photos, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        # Para crear una foto
-        # Hay que pasar request.DATA en vez de request.POST
-        serializer = PhotoSerializer(data=request.DATA)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            # Algo ha ido mal
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class PhotoDetailAPI(RetrieveUpdateDestroyAPIView):
+    """
+    Implementa el API de listado (GET), update (PUT) y borrado (DELETE) de fotos
+    """
+    queryset = Photo.objects.all()
+    serializer_class = PhotoSerializer
