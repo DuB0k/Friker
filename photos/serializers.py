@@ -3,7 +3,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
-
+from models import Photo
 
 class UserSerializer(serializers.Serializer):
     #Estos campos son los que van a aparecer en el api REST
@@ -40,3 +40,10 @@ class UserSerializer(serializers.Serializer):
         instance.password = new_password
 
         return instance
+
+
+#Este serializer se hace siguiendo un modelo
+class PhotoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Photo
