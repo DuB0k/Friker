@@ -60,14 +60,16 @@ class PhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
 
+"""
     def validate_description(self, attrs, source):
-        description = attrs.get(source)
+        # Si no hay description pone una cadena vacia
+        description = attrs.get(source, '')
         for badword in BADWORDS:
             if badword.lower() in description.lower():
                 raise serializers.ValidationError(badword + u" no esta permitido")
 
         return attrs # todo ha ido bien
-
+"""
 
 class PhotoListSerializer(PhotoSerializer):
     class Meta(PhotoSerializer.Meta):

@@ -7,9 +7,12 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from models import Photo
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from permissions import UserPermissions
 
 
 class UserListAPI(APIView):
+    permission_classes = (UserPermissions,)
     #Una lista de usuarios
     def get(self, request):
         # Recuperamos todos los usuarios del modelo
@@ -33,22 +36,29 @@ class UserListAPI(APIView):
 
 
 class UserDetailAPI(APIView):
+    permission_classes = (UserPermissions,)
     #Un unico usuario
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        # Serializamos el user
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+        if request.user.is_superuser or request.user == user:
+            # Serializamos el user
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        serializer = UserSerializer(user, data=request.DATA)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        if request.user.is_superuser or request.user == user:
+            serializer = UserSerializer(user, data=request.DATA)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+            else:
+                # Algo ha ido mal
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            # Algo ha ido mal
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, pk):
         user = get_object_or_404(User, pk=pk)
@@ -62,12 +72,11 @@ class PhotoListAPI(ListCreateAPIView):
     """
     queryset = Photo.objects.all()
     serializer_class = PhotoListSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
         # si es un post podemos enviar el modelo con todos los campos
         return PhotoSerializer if self.request.method == "POST" else self.serializer_class
-
-
 
 
 class PhotoDetailAPI(RetrieveUpdateDestroyAPIView):
@@ -76,6 +85,7 @@ class PhotoDetailAPI(RetrieveUpdateDestroyAPIView):
     """
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
 
 
